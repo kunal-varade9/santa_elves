@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+{% load static %}
+{% load utils %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Events</title>
+    
+  <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&display=swap" rel="stylesheet" />
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/script.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css" />
+
+  <!-- font awesome  link-->
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+  <link href="{% static 'css/chatbot.css' %}" rel="stylesheet">
+  
+  <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+  
+
+    
+    
+  <style>
+    body {
+        position: relative;
+        overflow-x: hidden;
+       
+      }
+    iframe{
+        width: 100% !important;
+    }
+    a {
+        text-decoration: none !important;
+      }
+    img {
+        position:static;
+        width:50px;
+    }
+    header{
+        position: static;
+    }
+    
+    html{
+        font-size: 65%;
+    }
+    .container{
+        font-size: initial !important;
+    }
+    .container .card-title{
+        font-size: initial !important;
+    }
+    .chatbot-div{
+        position: relative;
+      }
+    .botimage{
+        position: fixed;
+        bottom: 5px;
+        right:6px;
+        width: 100px;
+        height: 120px;
+      }
+      .chat-body a {
+        color: white;
+    }
+  
+      .chat-body a:hover {
+        color: white;
+      }
+    
+  </style>
+</head>
+<body>
+    <header>
+
+
+        <div id="menu-bar" class="fas-fa-bars"></div>
+        <img src="{% static 'images/logo.jpg' %}" alt="" height="50px" width="50px">
+    
+        <a href="" class="logo"><span style='font-size:65%;'>
+            <h2>Santa
+          </span>Elves</h2></a>
+    
+    
+        <nav class="navbar">
+          <a href="{% url 'home' %}">Home</a>
+          {% if user.is_authenticated %}
+          <a href="">Ticket</a>
+          <a href="#book">Book</a>
+          <a href="#services">Services</a>
+          
+          {% endif %}
+          <a href="#gallery">Gallery</a>
+          <a href="#contacts">Contacts</a>
+          
+          {% if not user.is_authenticated %}
+          <a href="#" data-bs-toggle="modal" data-bs-target="#register">Registration</a>
+          {% else %}
+          <a href="{% url 'logout' %}">Logout</a>
+          {% endif %}
+    
+        </nav>
+    
+        <div class="icons">
+            
+          {% if user.is_authenticated %}
+          <a style='color:white;text-decoration:none;font-size:1.5em'href="">Hi!  &nbsp;{{request.user.first_name}}</a> &nbsp;&nbsp;
+          {% endif %}
+          {% if not user.is_authenticated %}
+          <i class="fas fa-user" data-bs-toggle="modal" data-bs-target="#exampleModal"></i>
+          {% endif %}
+          <i class="fas fa-search" id="search-btn"></i>
+        </div>
+      </header>
+      <div class="container my-3">
+        
+        <h2 class="text-center"><b>Welcome! {{request.user.fullname}}</b></h2>
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+          Expected crowd for the following event would be &nbsp;&nbsp; <strong>{{predict}}</strong> 
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      </div>
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-8">
+                    <div class="card" style="width: 100%">
+                        <div class="card-body text-center" style="background:url('')" id="card-body" style="height:450px;display: flex;flex-direction: column;justify-content: center;">
+                            <h6 id='id' style='display:none'>{{event.0}},{{book.tickets}}</h6>
+                            <div style="display:flex" class="mb-2"><h2>Event name: &nbsp;&nbsp;</h2><h2 class="mb-2"><i>{{event.1}}</i></h2></div>
+                            
+                            <div style="display:flex" class="mb-2"><h3 class="card-text mb-2">Special Activites:&nbsp;&nbsp; <b>{{event.2}}</b></h3></div>
+                            <div style="display:flex" class="mb-2"><h3>Venue:&nbsp;&nbsp;</h3><p class="card-text mb-2"><i>{{event.6}}</i></p></div>
+                            <div style="display:flex" class="mb-2"><h3>On:&nbsp;&nbsp;</h3><p class="card-text mb-2"><i>{{event.4}}</i></p></div>
+                            <div style="display:flex" class="mb-2"><h3>Time:&nbsp;&nbsp;</h3><p class="card-text mb-2">{{event.5}}</p></div>
+                            <div style="display:flex" class="mb-2"><h3>Price:&nbsp;&nbsp;</h3><p id='price' class="card-text mb-2">{{event.7}} &nbsp;INR</p></div>
+                            {% if event.7 == 'Free' %}
+                            <a style='font-size:initial' href='/vouchers/{{event.0}}/{{book.tickets}}/' class='btn btn-primary button-a'>Buy Tickets</a>
+                            {% else %}
+                            <button id='getoffers' style='font-size:initial;display:block;' type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#spinner">
+                                Get Offers
+                            </button>
+                            {% endif %}
+                            <!-- <button id='#butticket' style='font-size:initial;display:none;' type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#spinner">
+                                Buy Ticket
+                            </button> -->
+                        </div>
+                    </div>
+                
+            </div>
+            <div class="col-md-4">
+                <div style="width:400px">
+                {% if event.0 == 26 %}
+                <iframe src=
+"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3783.8101699628696!2d73.73220227508561!3d18.492255882595874!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2bde8914c37a7%3A0xdb247b6f986291b7!2sCafe%20CO2!5e0!3m2!1sen!2sin!4v1672409886540!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                    width="400"
+                    height="300"
+                    frameborder="0"
+                    style="border:0;"
+                    allowfullscreen=""
+                    aria-hidden="false"
+                    tabindex="0">
+            </iframe>
+                {% elif event.0 == 31 %}
+                <iframe src=
+"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3781.595714842162!2d73.74234797508814!3d18.59225678251526!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2bb432e774169%3A0xf8a3ff82c88a0091!2sMashup%20-%20Rooftop%20%26%20Lounge%20Bar!5e0!3m2!1sen!2sin!4v1672409943124!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                    width="400"
+                    height="300"
+                    frameborder="0"
+                    style="border:0;"
+                    allowfullscreen=""
+                    aria-hidden="false"
+                    tabindex="0">
+            </iframe>
+                {% elif event.0 == 27 %}
+                <iframe src=
+"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3782.7942206885045!2d73.8837340750868!3d18.53819898255878!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2c0fdd5f6a03d%3A0x118b85914c35adcc!2sBlue%20Diamond%2C%20Pune%20-%20IHCL%20SeleQtions!5e0!3m2!1sen!2sin!4v1672410008050!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                    width="400"
+                    height="300"
+                    frameborder="0"
+                    style="border:0;"
+                    allowfullscreen=""
+                    aria-hidden="false"
+                    tabindex="0">
+            </iframe>
+                {% elif event.0 == 28 %}
+                <iframe src=
+"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d30258.190092284232!2d73.7455730743164!3d18.561692600000015!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2bf4c7ff0cb85%3A0xd19b90bd5cf502a4!2sCAFE%20PETER!5e0!3m2!1sen!2sin!4v1672410075651!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                    width="400"
+                    height="300"
+                    frameborder="0"
+                    style="border:0;"
+                    allowfullscreen=""
+                    aria-hidden="false"
+                    tabindex="0">
+            </iframe>
+                {% elif event.0 == 29 %}
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3782.3466975903525!2d73.80640517508724!3d18.55840198254249!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2bff067ddfd27%3A0xc3d7e63075ce07d9!2sThird%20Wave%20Coffee!5e0!3m2!1sen!2sin!4v1672410163172!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                    width="400"
+                    height="300"
+                    frameborder="0"
+                    style="border:0;"
+                    allowfullscreen=""
+                    aria-hidden="false"
+                    tabindex="0">
+            </iframe>
+                {% elif event.0 == 16 %}
+                <iframe src=
+                "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3684.972080975477!2d88.38341477519705!3d22.54271857951297!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a0277b8d61d8bb9%3A0xe0ea8a4b02f90a30!2sSabka%20Club!5e0!3m2!1sen!2sin!4v1672409207205!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                                    width="400"
+                                    height="300"
+                                    frameborder="0"
+                                    style="border:0;"
+                                    allowfullscreen=""
+                                    aria-hidden="false"
+                                    tabindex="0">
+                            </iframe>
+                {% elif event.0 == 14 %}
+                <iframe src=
+                "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3684.320357163364!2d88.33768817519778!3d22.567118579495556!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a0277acd8ac3141%3A0x2e8fd39546f8bab1!2sWest%20Bengal%20Tourism%20Jetty%2C%20New%20Babughat!5e0!3m2!1sen!2sin!4v1672409288010!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                                    width="400"
+                                    height="300"
+                                    frameborder="0"
+                                    style="border:0;"
+                                    allowfullscreen=""
+                                    aria-hidden="false"
+                                    tabindex="0">
+                            </iframe>
+                {% elif event.0 == 15 %}
+                <iframe src=
+"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3686.0734168505387!2d88.34689697519579!3d22.501428479542373!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a027159e650f8a7%3A0x9a08e421c4d9e2f5!2sPrinceton%20Club!5e0!3m2!1sen!2sin!4v1672409354404!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+                    width="400"
+                    height="300"
+                    frameborder="0"
+                    style="border:0;"
+                    allowfullscreen=""
+                    aria-hidden="false"
+                    tabindex="0">
+            </iframe>
+                {% elif event.0 == 17 %}
+                <iframe src=
+"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3684.6667167184205!2d88.34929217519736!3d22.55415427950483!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a02770f98c2d13d%3A0xe65911e7c1796451!2sSomeplace%20Else%2C%20Kolkata%2C%20Park%20Street%20Area!5e0!3m2!1sen!2sin!4v1672409427388!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                    width="400"
+                    height="300"
+                    frameborder="0"
+                    style="border:0;"
+                    allowfullscreen=""
+                    aria-hidden="false"
+                    tabindex="0">
+            </iframe>
+                {% elif event.0 == 18 %}
+                <iframe src=
+"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3683.765853190474!2d88.40579507519837!3d22.587859079480847!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a0275c1513d0b19%3A0x7bd1d60e296467ae!2sAfraa%20Lounge!5e0!3m2!1sen!2sin!4v1672409512460!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                    width="400"
+                    height="300"
+                    frameborder="0"
+                    style="border:0;"
+                    allowfullscreen=""
+                    aria-hidden="false"
+                    tabindex="0">
+            </iframe>
+                {% elif event.0 == 19 %}
+                <iframe src=
+"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3684.1450457652168!2d88.34067218035217!3d22.57367782660977!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a0277a2930f7cad%3A0x8d4f2950e6218aa2!2sStrand%20Rd%2C%20B.B.D.%20Bagh%2C%20Kolkata%2C%20West%20Bengal!5e0!3m2!1sen!2sin!4v1672409568194!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                    width="400"
+                    height="300"
+                    frameborder="0"
+                    style="border:0;"
+                    allowfullscreen=""
+                    aria-hidden="false"
+                    tabindex="0">
+            </iframe>
+                {% elif event.0 == 23 %}
+                <iframe src=
+"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3684.1857811634736!2d88.34166727519792!3d22.572153879492003!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a0277a264914135%3A0xd3e5d25285db81af!2sVivada%20Cruise!5e0!3m2!1sen!2sin!4v1672409643540!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                    width="400"
+                    height="300"
+                    frameborder="0"
+                    style="border:0;"
+                    allowfullscreen=""
+                    aria-hidden="false"
+                    tabindex="0">
+            </iframe>
+                {% elif event.0 == 5 %}
+                <iframe src=
+"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3507.7787915457243!2d77.06804317539672!3d28.456083975761636!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d1e70a6c00001%3A0xef9030b6cd2655e2!2sTaj%20City%20Centre%20Gurugram!5e0!3m2!1sen!2sin!4v1672408549813!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                    width="400"
+                    height="300"
+                    frameborder="0"
+                    style="border:0;"
+                    allowfullscreen=""
+                    aria-hidden="false"
+                    tabindex="0">
+            </iframe>
+                {% elif event.0 == 4 %}
+                <iframe src=
+"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3505.472943744106!2d77.09606297539935!3d28.525500975723375!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d1bff28c77efd%3A0x4d6ad440a8d8385e!2sThe%20Umrao!5e0!3m2!1sen!2sin!4v1672408448632!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                    width="400"
+                    height="300"
+                    frameborder="0"
+                    style="border:0;"
+                    allowfullscreen=""
+                    aria-hidden="false"
+                    tabindex="0">
+            </iframe>
+                {% elif event.0 == 6 %}
+                <iframe src=
+"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3501.2429793675674!2d77.11797307540415!3d28.652442475653867!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d0373c96aaaab%3A0xa1c50397f0f4e23f!2sJazbaa%20Bar%20%26%20Lounge!5e0!3m2!1sen!2sin!4v1672408627036!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                    width="400"
+                    height="300"
+                    frameborder="0"
+                    style="border:0;"
+                    allowfullscreen=""
+                    aria-hidden="false"
+                    tabindex="0">
+            </iframe>
+                {% elif event.0 == 7 %}
+                <iframe src=
+"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3503.0550237017055!2d77.19366497540203!3d28.598126075683517!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390ce2a002a0ec75%3A0x6fa4dbaa0e901548!2sZerruco%20Kitchen%20And%20Bar!5e0!3m2!1sen!2sin!4v1672408689242!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                    width="400"
+                    height="300"
+                    frameborder="0"
+                    style="border:0;"
+                    allowfullscreen=""
+                    aria-hidden="false"
+                    tabindex="0">
+            </iframe>
+                {% elif event.0 == 8 %}
+                <iframe src=
+                "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d224219.48829315306!2d77.00068744998232!3d28.586889155439756!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390cfd37c6824f75%3A0x25f23252aa20dd4a!2sSsky%20Bar%20%26%20Lounge!5e0!3m2!1sen!2sin!4v1672408845845!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                                    width="400"
+                                    height="300"
+                                    frameborder="0"
+                                    style="border:0;"
+                                    allowfullscreen=""
+                                    aria-hidden="false"
+                                    tabindex="0">
+                            </iframe>
+
+                {% elif event.0 == 9 %}
+                <iframe src=
+"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3888.985275526512!2d77.3786755749671!3d12.908667787401011!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae382bac70bdbd%3A0x675d0148240d3a1a!2sBig%20Banyan%20Vineyard!5e0!3m2!1sen!2sin!4v1672408920444!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                    width="400"
+                    height="300"
+                    frameborder="0"
+                    style="border:0;"
+                    allowfullscreen=""
+                    aria-hidden="false"
+                    tabindex="0">
+            </iframe>
+                {% elif event.0 == 10 %}
+                <iframe src=
+"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3887.8689034633785!2d77.63790477496842!3d12.980235687335917!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae16a536c3720d%3A0x93f3ce114b0bd232!2sAshoka%20Tower%2C%205th%20Main%20Rd%2C%20Indira%20Nagar%201st%20Stage%2C%20Stage%201%2C%20Indiranagar%2C%20Bengaluru%2C%20Karnataka%20560038!5e0!3m2!1sen!2sin!4v1672408983659!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                    width="400"
+                    height="300"
+                    frameborder="0"
+                    style="border:0;"
+                    allowfullscreen=""
+                    aria-hidden="false"
+                    tabindex="0">
+            </iframe>
+        
+                {% elif event.0 == 11 %}
+                <iframe src=
+"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3888.924370944285!2d77.63044217496721!3d12.91258228739735!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae152ecf404d0f%3A0x57cc9839f5589dee!2sCatch%20Up%20Bangalore!5e0!3m2!1sen!2sin!4v1672409044300!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                    width="400"
+                    height="300"
+                    frameborder="0"
+                    style="border:0;"
+                    allowfullscreen=""
+                    aria-hidden="false"
+                    tabindex="0">
+            </iframe>
+            {% elif event.0 == 12 %}
+            <iframe src=
+"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3684.167952446504!2d88.34197437519796!3d22.572820879491566!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a0277a2e8448a01%3A0xfc7031bafe756ae4!2sMillennium%20Park!5e0!3m2!1sen!2sin!4v1672409102628!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                    width="400"
+                    height="300"
+                    frameborder="0"
+                    style="border:0;"
+                    allowfullscreen=""
+                    aria-hidden="false"
+                    tabindex="0">
+            </iframe>
+            {% elif event.0 == 33 %}
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3770.053157581778!2d72.8736905145611!3d19.105323787071093!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7c86a85f28959%3A0x2b1e48b3c1675b87!2sThe%20Lalit%20Mumbai!5e0!3m2!1sen!2sin!4v1672481642005!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            {% elif event.0 == 32 %}
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3777.677441246746!2d73.28013191455523!3d18.767939587265467!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be8062553ab1ead%3A0x2e7e55c634a33f71!2sImagicaa!5e0!3m2!1sen!2sin!4v1672481867589!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            {% elif event.0 == 35 %}
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3754.898183483061!2d72.68295721457274!3d19.75947998669954!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be71f52550c3bf7%3A0xe6cf4965b60b9eb3!2sVASANT%20SUDHA%20FARMS%20RESORT!5e0!3m2!1sen!2sin!4v1672481951627!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            {% elif event.0 == 34 %}
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d7545.130482029116!2d72.8158007697754!3d18.994798600000017!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7ce8c7fa4946d%3A0xc37333cea3da141f!2sPunjab%20Grill%20Lower%20Parel!5e0!3m2!1sen!2sin!4v1672482051942!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                {% else %}
+                <center><h3>No Route Found</h3></center>
+                {% endif %}
+            </div>
+            </div>
+        </div>    
+            
+    </div>
+    <center>
+        <div class="modal fade" id="spinner" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+          
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <div class="wrapper">
+                  <div class="container">
+                    <canvas id="wheel"></canvas>
+                    <button id="spin-btn">Spin</button>
+                    <img style='position:absolute;' src="{% static 'svg/arrow-left.svg' %}" alt="spinner-arrow" />
+                  </div>
+                  <div id="final-value">
+                    <p>Click On The Spin Button To Start</p>
+                    
+                  </div>
+                </div>
+              </div>
+              <!-- <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Save changes</button>
+              </div> -->
+            </div>
+          </div>
+        </div>
+      <!-- <div class="wrapper">
+        <div class="container">
+          <canvas id="wheel"></canvas>
+          <button id="spin-btn">Spin</button>
+          <img src="{% static 'svg/arrow-left.svg' %}" alt="spinner-arrow" />
+        </div>
+        <div id="final-value">
+          <p>Click On The Spin Button To Start</p>
+          
+        </div>
+      </div> -->
+      </center>
+      <br>
+      <br>
+
+      <div class="chatbot-div">
+        <img class='botimage' src="{% static 'images/santabot2.png' %}" data-bs-toggle="modal" data-bs-target="#chatbot">
+      </div>
+      <div class="modal fade" id="chatbot" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div style='float:right; width:1500px;position:fixed;bottom:0;right:0;' class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div style="padding:0;" class="modal-body ">
+                            <div class="card">
+                                
+                                <div style="background:url('/static/images/santaback.jpg');background-size: contain" class="card-body height3 chat-height">
+                                    <ul class="chat-list" id="chat-list">
+    
+                                    </ul>
+    
+                                </div>
+                                <div class='input-group mb-3'>
+                                    <input type="text" name="request" class="form-control" id="input">
+                                    <button style='font-size: initial;margin: 0;' class="btn btn-success" id="start"><i
+                                            class="fas fa-microphone"></i></button>
+                                    <button style='font-size: initial;margin: 0;' class="btn btn-danger" id="stop"><i
+                                            class="fas fa-microphone-slash"></i></button>
+                                    <button style='font-size: initial;margin: 0;' onclick='chatbot()' type="button" class="btn btn-success" style="border-bottom-right-radius: 0px;
+                                border-top-right-radius: 0px;">Send</button>
+                                </div>
+                            </div>
+                        
+                    
+                </div>
+            </div>
+        </div>
+    </div>  
+    
+    
+      <!-- Section: Social media -->
+    
+      <!-- Section: Form -->
+    
+    
+      <!--Grid column-->
+    
+      <!--Grid column-->
+    
+      <script>
+        function chatbot() {
+            var raw_request = document.getElementById('input').value
+            if (raw_request.slice(0, 2) == 'hi') {
+                raw_request = 'hi'
+    
+            }
+            var ul_in = document.getElementById('chat-list')
+            var li_in = document.createElement('li');
+            li_in.className = 'out'
+            var div_cb_in = document.createElement('div')
+            div_cb_in.className = 'chat-body'
+            var div_cm_in = document.createElement('div')
+            div_cm_in.className = 'chat-message'
+            var h5_in = document.createElement('h5')
+            h5_in.innerText = 'You'
+            var p_in = document.createElement('p')
+            p_in.innerText = raw_request
+    
+            //var raw_request = document.getElementById('y_message').innerText
+            var request = raw_request.charAt(0).toUpperCase() + raw_request.slice(1)
+            let responses = {
+                greetings: ['Hello', 'Hie', 'Hey', 'Hie, I am Chatbot', 'Hi'],
+                exposure: ['Bye', 'See you soon', 'Bye Bye', 'By'],
+                book: ['#book',],
+                home: ['',],
+                normal: ['Login yourself','Feedback please'],
+                visual:['#insight'],
+    
+            }
+            let requests = {
+                visual:['Visualisation','Crowd','Analysis','Rarity'],
+                normal:['Cool',''],
+                home:['New',],
+                book: ['Know', 'Where', 'Location', 'I', 'Want', 'Link', 'Spinner','Book'],
+                greetings: ['Hello', 'Hie', 'Hey', 'Hie, I am Chatbot', 'Hi'],
+                exposure: ['Bye', 'See you soon', 'Bye Bye'],
+            }
+            // request loop
+            found_flag = false
+            request = request.split(' ')
+            console.log(request)
+            for (let a in requests) {
+                for (let i of request) {
+                    for (let b of requests[a]) {
+                        if (i == b) {
+                            var c = a
+                            console.log(c)
+                            found_flag = true
+                            break
+                        }
+                    }
+                }
+            }
+            if (!found_flag) {
+                c = 'greetings'
+            }
+            console.log(c)
+            for (let y in responses) {
+                if (c == y) {
+                    var d = responses[y][[Math.floor(Math.random() * responses[y].length)]]
+    
+                }
+            }
+    
+            var anchor = document.createElement('a')
+    
+            var ul = document.getElementById('chat-list')
+            var li = document.createElement('li');
+            li.className = 'in'
+            var div_cb = document.createElement('div')
+            div_cb.className = 'chat-body'
+            var div_cm = document.createElement('div')
+            div_cm.className = 'chat-message'
+            var h5 = document.createElement('h5')
+            h5.innerText = 'Robo'
+            var p = document.createElement('p')
+            p.innerText = d
+    
+            div_cm_in.appendChild(h5_in)
+            div_cm_in.appendChild(p_in)
+            div_cb_in.appendChild(div_cm_in)
+            li_in.appendChild(div_cb_in)
+    
+            div_cm.appendChild(h5)
+            if (c == 'book' || c == 'visual'){
+                d = d.toLowerCase()
+                
+                anchor.href = `http://127.0.0.1:8000/${d}`
+                anchor.innerText = `http://127.0.0.1:8000/${d}`
+                div_cm.appendChild(anchor)
+            }
+            else {
+                div_cm.appendChild(p)
+            }
+    
+            div_cb.appendChild(div_cm)
+            li.appendChild(div_cb)
+    
+    
+            ul_in.appendChild(li_in)
+            setTimeout(function () {
+                ul.appendChild(li)
+            }, 1000);
+            //ul_in.appendChild(li_in)
+    
+        }
+    
+        if ("webkitSpeechRecognition" in window) {
+            // Initialize webkitSpeechRecognition
+            let speechRecognition = new webkitSpeechRecognition();
+            let final_transcript = "";
+            // String for the Final Transcript
+    
+    
+            // Set the properties for the Speech Recognition object
+            speechRecognition.continuous = true;
+            speechRecognition.interimResults = true;
+    
+            // Callback Function for the onStart Event
+            //speechRecognition.onstart = () => {
+            // Show the Status Element
+            //document.querySelector("#status").style.display = "block";
+            //};
+            //speechRecognition.onerror = () => {
+            // Hide the Status Element
+            // document.querySelector("#status").style.display = "none";
+            //};
+            //speechRecognition.onend = () => {
+            // Hide the Status Element
+            //document.querySelector("#status").style.display = "none";
+            //};
+    
+            document.querySelector("#input").value = ''
+            speechRecognition.onresult = (event) => {
+                // Create the interim transcript string locally because we don't want it to persist like final transcript
+                let interim_transcript = "";
+    
+                // Loop through the results from the speech recognition object.
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    // If the result item is Final, add it to Final Transcript, Else add it to Interim transcript
+                    if (event.results[i].isFinal) {
+                        final_transcript = ''
+                        final_transcript += event.results[i][0].transcript;
+    
+                    } else {
+                        interim_transcript += event.results[i][0].transcript;
+                    }
+                }
+                document.querySelector("#input").value = ''
+                // Set the Final transcript and Interim transcript.
+                document.querySelector("#input").value = final_transcript;
+                //document.querySelector("#input").value = interim_transcript;
+            };
+    
+            // Set the onClick property of the start button
+            document.querySelector("#start").onclick = () => {
+                // Start the Speech Recognition
+                document.querySelector("#input").value = ''
+                speechRecognition.start();
+    
+    
+            };
+            // Set the onClick property of the stop button
+            document.querySelector("#stop").onclick = () => {
+                document.querySelector("#input").value = ''
+                // Stop the Speech Recognition
+                speechRecognition.stop();
+            };
+        }
+        else {
+            console.log("Speech Recognition Not Available");
+        }
+    </script>
+    
+      <script>
+        var price_ = document.getElementById('price').innerText.split(' ')[0]
+        console.log(price_)
+        if (price_ != 'Free'){
+            var t = price_.split(',')[0]
+            var x = price_.split(',')[1]
+            var o = t+x
+           
+            var x = parseInt(o) * parseInt('{{book.tickets}}')
+            document.getElementById('price').innerText = String(x) + ' ' + 'INR'
+        }
+        else {
+            document.getElementById('price').innerText = price_
+        }
+        
+      </script>
+    
+    <script src="{% static 'js/bootstrap.bundle.js' %}"></script>
+    <script src="{% static 'js/index.js' %}"></script>
+  <!-- Chart JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <!-- Chart JS Plugin for displaying text over chart -->
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.1.0/chartjs-plugin-datalabels.min.js"></script>
+  <!-- Script -->
+  <script src="{% static 'js/spinnerjs.js' %}"></script>
+</body>
+</html>

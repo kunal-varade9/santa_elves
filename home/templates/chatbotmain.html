@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbox</title>
+    <link href="{% static 'css/bootstrap.min.css'%}" rel="stylesheet">
+    <link href="{% static 'css/chatbot.css' %}" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/985b63b878.js" crossorigin="anonymous"></script>
+    <style>
+        .chat-body a {
+            color: white;
+        }
+
+        .chat-body a:hover {
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container content">
+        <div class="row">
+            <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 col-12">
+                <div class="card">
+                    <div class="card-header">Chat</div>
+                    <div class="card-body height3 chat-height">
+                        <ul class="chat-list" id="chat-list">
+                            <!-- <li class="in">
+                                <div class="chat-body">
+                                    <div class="chat-message">
+                                        <h5>Jimmy Willams</h5>
+                                        <p id="in">Raw denim heard of them tofu master cleanse</p>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="out" id="out">
+                                <div class="chat-body" id="chat">
+                                    <div class="chat-message" id="chat-id">
+                                        <h5>You<h5>
+                                        <p id="y_message">hello</p>
+                                    </div>
+                                </div>
+                            </li> -->
+                        </ul>
+
+                    </div>
+                    <div class='input-group mb-3'>
+                        <input type="text" name="request" class="form-control" id="input">
+                        <button class="btn btn-success" id="start"><i class="fas fa-microphone"></i></button>
+                        <button class="btn btn-danger" id="stop"><i class="fas fa-microphone-slash"></i></button>
+                        <button onclick='chatbot()' type="button" class="btn btn-success" style="border-bottom-right-radius: 0px;
+                        border-top-right-radius: 0px;">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="chatbot" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div style='float:left;' class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 col-12">
+                                <div class="card">
+                                    <div class="card-header">Chat</div>
+                                    <div class="card-body height3 chat-height">
+                                        <ul class="chat-list" id="chat-list">
+
+                                        </ul>
+
+                                    </div>
+                                    <div class='input-group mb-3'>
+                                        <input type="text" name="request" class="form-control" id="input">
+                                        <button class="btn btn-success" id="start"><i
+                                                class="fas fa-microphone"></i></button>
+                                        <button class="btn btn-danger" id="stop"><i
+                                                class="fas fa-microphone-slash"></i></button>
+                                        <button onclick='chatbot()' type="button" class="btn btn-success" style="border-bottom-right-radius: 0px;
+                                    border-top-right-radius: 0px;">Send</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>    
+
+
+
+            <script src="{% static 'js/bootstrap.bundle.js' %}"></script>
+            <script src="{% static 'js/snowflake.min.js' %}"></script>
+            <!-- <script>
+        const snowflake = new SnowflakeJs(25,180,2500,5,20);
+        snowflake.init();
+    </script> -->
+            <script>
+                function chatbot() {
+                    var raw_request = document.getElementById('input').value
+                    if (raw_request.slice(0, 2) == 'hi') {
+                        raw_request = 'hi'
+
+                    }
+                    var ul_in = document.getElementById('chat-list')
+                    var li_in = document.createElement('li');
+                    li_in.className = 'out'
+                    var div_cb_in = document.createElement('div')
+                    div_cb_in.className = 'chat-body'
+                    var div_cm_in = document.createElement('div')
+                    div_cm_in.className = 'chat-message'
+                    var h5_in = document.createElement('h5')
+                    h5_in.innerText = 'You'
+                    var p_in = document.createElement('p')
+                    p_in.innerText = raw_request
+
+                    //var raw_request = document.getElementById('y_message').innerText
+                    var request = raw_request.charAt(0).toUpperCase() + raw_request.slice(1)
+                    let responses = {
+                        greetings: ['Hello', 'Hie', 'Hey', 'Hie, I am Chatbot', 'Hi'],
+                        exposure: ['Bye', 'See you soon', 'Bye Bye', 'By'],
+                        links: ['', 'spinner',],
+                        home: ['',]
+                    }
+                    let requests = {
+                        links: ['Know', 'Where', 'Location', 'I', 'Want', 'Link', 'Spinner',],
+                        greetings: ['Hello', 'Hie', 'Hey', 'Hie, I am Chatbot', 'Hi'],
+                        exposure: ['Bye', 'See you soon', 'Bye Bye'],
+                    }
+                    // request loop
+                    found_flag = false
+                    request = request.split(' ')
+                    console.log(request)
+                    for (let a in requests) {
+                        for (let i of request) {
+                            for (let b of requests[a]) {
+                                if (i == b) {
+                                    var c = a
+                                    console.log(c)
+                                    found_flag = true
+                                    break
+                                }
+                            }
+                        }
+                    }
+                    if (!found_flag) {
+                        c = 'greetings'
+                    }
+                    console.log(c)
+                    for (let y in responses) {
+                        if (c == y) {
+                            var d = responses[y][[Math.floor(Math.random() * responses[y].length)]]
+
+                        }
+                    }
+
+                    var anchor = document.createElement('a')
+
+                    var ul = document.getElementById('chat-list')
+                    var li = document.createElement('li');
+                    li.className = 'in'
+                    var div_cb = document.createElement('div')
+                    div_cb.className = 'chat-body'
+                    var div_cm = document.createElement('div')
+                    div_cm.className = 'chat-message'
+                    var h5 = document.createElement('h5')
+                    h5.innerText = 'Robo'
+                    var p = document.createElement('p')
+                    p.innerText = d
+
+                    div_cm_in.appendChild(h5_in)
+                    div_cm_in.appendChild(p_in)
+                    div_cb_in.appendChild(div_cm_in)
+                    li_in.appendChild(div_cb_in)
+
+                    div_cm.appendChild(h5)
+                    if (c == 'links') {
+                        d = d.toLowerCase()
+                        anchor.href = `http://127.0.0.1:8000/${d}`
+                        anchor.innerText = d
+                        div_cm.appendChild(anchor)
+                    }
+                    else {
+                        div_cm.appendChild(p)
+                    }
+
+                    div_cb.appendChild(div_cm)
+                    li.appendChild(div_cb)
+
+
+                    ul_in.appendChild(li_in)
+                    setTimeout(function () {
+                        ul.appendChild(li)
+                    }, 1000);
+                    //ul_in.appendChild(li_in)
+
+                }
+
+                if ("webkitSpeechRecognition" in window) {
+                    // Initialize webkitSpeechRecognition
+                    let speechRecognition = new webkitSpeechRecognition();
+                    let final_transcript = "";
+                    // String for the Final Transcript
+
+
+                    // Set the properties for the Speech Recognition object
+                    speechRecognition.continuous = true;
+                    speechRecognition.interimResults = true;
+
+                    // Callback Function for the onStart Event
+                    //speechRecognition.onstart = () => {
+                    // Show the Status Element
+                    //document.querySelector("#status").style.display = "block";
+                    //};
+                    //speechRecognition.onerror = () => {
+                    // Hide the Status Element
+                    // document.querySelector("#status").style.display = "none";
+                    //};
+                    //speechRecognition.onend = () => {
+                    // Hide the Status Element
+                    //document.querySelector("#status").style.display = "none";
+                    //};
+
+                    document.querySelector("#input").value = ''
+                    speechRecognition.onresult = (event) => {
+                        // Create the interim transcript string locally because we don't want it to persist like final transcript
+                        let interim_transcript = "";
+
+                        // Loop through the results from the speech recognition object.
+                        for (let i = event.resultIndex; i < event.results.length; ++i) {
+                            // If the result item is Final, add it to Final Transcript, Else add it to Interim transcript
+                            if (event.results[i].isFinal) {
+                                final_transcript = ''
+                                final_transcript += event.results[i][0].transcript;
+
+                            } else {
+                                interim_transcript += event.results[i][0].transcript;
+                            }
+                        }
+                        document.querySelector("#input").value = ''
+                        // Set the Final transcript and Interim transcript.
+                        document.querySelector("#input").value = final_transcript;
+                        //document.querySelector("#input").value = interim_transcript;
+                    };
+
+                    // Set the onClick property of the start button
+                    document.querySelector("#start").onclick = () => {
+                        // Start the Speech Recognition
+                        document.querySelector("#input").value = ''
+                        speechRecognition.start();
+
+
+                    };
+                    // Set the onClick property of the stop button
+                    document.querySelector("#stop").onclick = () => {
+                        document.querySelector("#input").value = ''
+                        // Stop the Speech Recognition
+                        speechRecognition.stop();
+                    };
+                }
+                else {
+                    console.log("Speech Recognition Not Available");
+                }
+            </script>
+
+            <!-- <script>
+
+
+
+        <!-- form = document.getElementById('form')
+        var i = '{{response}}'
+        function chatbot(e){
+                e.preventDefault();
+                var ul = document.getElementById('chat-list')
+                var li = document.createElement('li');
+                li.className = 'in'
+                var div_cb = document.createElement('div')
+                div_cb.className = 'chat-body'
+                var div_cm = document.createElement('div')
+                div_cm.className = 'chat-message'
+                var h5 = document.createElement('h5')
+                h5.innerText = 'Robo'
+                var p = document.createElement('p')
+                p.innerText = i
+                div_cm.appendChild(h5)
+                div_cm.appendChild(p)
+                div_cb.appendChild(div_cm)
+                li.appendChild(div_cb)
+                ul.appendChild(li)
+                }
+            <!-- form.addEventListener('',chatbot) -->
+
+</body>
+
+</html>
